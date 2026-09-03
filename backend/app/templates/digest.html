@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}AI 日报 — AI 资讯站{% endblock %}
+
+{% block content %}
+<div class="container">
+  <section class="digest-head fade-up">
+    <h1 class="page-title">AI 日报</h1>
+    <p class="page-sub">每天一份，大模型从当日资讯中提炼的重点与趋势</p>
+  </section>
+
+  {% if dates %}
+  <div class="date-scroller fade-up">
+    {% for d in dates %}
+    <a class="date-chip {% if d == current.date %}active{% endif %}" href="/digest?date={{ d }}">{{ d[5:] }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not current %}
+  <div class="empty-state">
+    <div class="icon">📰</div>
+    <p>还没有日报，等第一份日报生成后在这里查看</p>
+  </div>
+  {% else %}
+  <div class="digest-body">
+    <section class="card section fade-up">
+      <h2 class="section-title">⭐ 今日 Top 事件（{{ current.date }}）</h2>
+      <div class="events">
+        {% for e in current.top_events or [] %}
+        <a class="event" href="{{ e.url }}" target="_blank" rel="noopener">
+          <span class="event-rank">{{ loop.index }}</span>
+          <div class="event-main">
+            <span class="event-title">{{ e.title }}</span>
+            {% if e.comment %}<span class="event-comment">{{ e.comment }}</span>{% endif %}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+
+    {% if current.highlights %}
+    <section class="card section fade-up">
+      <h2 class="section-title">🗂 分类速览</h2>
+      <div class="highlights">
+        {% for cat, items in current.highlights.items() %}
+        <div class="hl-group">
+          <span class="tag-pill category">{{ cat }}</span>
+          <ul class="hl-list">
+            {% for it in items %}<li>{{ it }}</li>{% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if current.trend %}
+    <section class="card section trend fade-up">
+      <h2 class="section-title">📈 趋势总结</h2>
+      <p class="trend-text">{{ current.trend }}</p>
+    </section>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

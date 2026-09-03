@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}关于本站 — AI 资讯站{% endblock %}
+
+{% block description %}了解本站的运作方式：自动采集 AI 资讯，大模型生成中文摘要、评分与每日日报{% endblock %}
+
+{% block content %}
+<div class="container about-page">
+  <section class="card detail-content fade-up">
+    <h1 class="page-title">关于本站</h1>
+    <p class="page-sub" style="margin-top: 8px">一个由自动化流程驱动的 AI 资讯聚合站</p>
+
+    <div class="about-section">
+      <h2 class="about-h2">这个网站做什么</h2>
+      <p>每天定时从多个高质量信息源自动采集 AI 领域的文章，再由大模型完成整合：把英文标题翻译成中文、生成 120 字以内中文摘要、按重要程度打分（1-5）、自动分类打标签。每晚还会把当天内容提炼成一份<strong>AI 日报</strong>——Top 事件、分类速览与趋势总结。</p>
+    </div>
+
+    <div class="about-section">
+      <h2 class="about-h2">信息来源</h2>
+      <p>TechCrunch AI、The Verge、机器之心、量子位、Hacker News、arXiv cs.AI、Reddit r/MachineLearning 等 RSS 源，也开放推送接口供更多采集任务接入。所有内容版权归原作者，本站仅展示摘要与原文链接。</p>
+    </div>
+
+    <div class="about-section">
+      <h2 class="about-h2">怎么用</h2>
+      <ul class="about-list">
+        <li><strong>资讯</strong>：按时间或重要性浏览，支持按分类、来源筛选和关键词搜索</li>
+        <li><strong>日报</strong>：每天一份，3 分钟看完当天 AI 圈的重点</li>
+        <li><strong>问答</strong>：用自然语言提问，AI 基于已采集的资讯回答并附来源</li>
+        <li><strong>留言</strong>：欢迎在留言板交流建议与想法</li>
+      </ul>
+    </div>
+
+    <div class="about-section">
+      <h2 class="about-h2">关于站长</h2>
+      <p>一个关注 AI 的开发者，做这个站是为了每天花几分钟掌握 AI 领域真正重要的事。如果你有好的信息源推荐或合作意向，欢迎留言。</p>
+    </div>
+
+    <div class="about-actions">
+      <a class="btn btn-primary" href="/guestbook">去留言板说点什么 →</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

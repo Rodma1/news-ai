@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="login-wrap">
+  <form class="login-card card fade-up" id="loginForm">
+    <div class="logo">AI</div>
+    <h1 class="login-title">管理后台</h1>
+    <p class="login-sub">请登录管理员账号</p>
+    <input id="username" placeholder="用户名" autocomplete="username" required />
+    <input id="password" type="password" placeholder="密码" autocomplete="current-password" required />
+    <p class="error-text" id="errorText" style="display: none"></p>
+    <button type="submit" class="btn btn-primary" id="loginBtn">登录</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('errorText');
+  btn.disabled = true;
+  err.style.display = 'none';
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value
+      })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || '登录失败');
+    }
+    const data = await res.json();
+    document.cookie = `admin_token=${data.token}; path=/; max-age=86400; samesite=lax`;
+    location.href = '/admin/dashboard';
+  } catch (ex) {
+    err.textContent = ex.message;
+    err.style.display = 'block';
+    btn.disabled = false;
+  }
+});
+</script>
+{% endblock %}

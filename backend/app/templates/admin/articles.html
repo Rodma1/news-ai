@@ -1,0 +1,88 @@
+{% extends "admin/shell.html" %}
+
+{% block page %}
+<div class="head fade-up">
+  <h1 class="page-title">文章管理</h1>
+  <span class="total" id="totalInfo"></span>
+</div>
+
+<div class="card block fade-up">
+  <div class="admin-filter-row">
+    <input class="filter-input" id="q" type="search" placeholder="搜索标题/来源…" />
+    <select class="filter-select" id="status">
+      <option value="">全部状态</option>
+      <option value="done">已处理</option>
+      <option value="pending">待处理</option>
+      <option value="failed">失败</option>
+    </select>
+    <button class="btn btn-sm" onclick="load(1)">筛选</button>
+  </div>
+</div>
+
+<div id="articleList"></div>
+
+<div class="pager">
+  <button class="btn btn-sm" id="prevBtn" onclick="load(page - 1)">上一页</button>
+  <span class="pager-info" id="pageInfo"></span>
+  <button class="btn btn-sm" id="nextBtn" onclick="load(page + 1)">下一页</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let page = 1;
+
+const STATUS_TEXT = { done: '已处理', pending: '待处理', failed: '失败' };
+
+async function load(p) {
+  page = Math.max(1, p);
+  const q = document.getElementById('q').value.trim();
+  const status = document.getElementById('status').value;
+  const res = await api(`/api/admin/articles?page=${page}&q=${encodeURIComponent(q)}&status=${status}`);
+  document.getElementById('totalInfo').textContent = `共 ${res.total} 条`;
+  document.getElementById('pageInfo').textContent = `${res.page} / ${res.pages}`;
+  document.getElementById('prevBtn').disabled = res.page <= 1;
+  document.getElementById('nextBtn').disabled = res.page >= res.pages;
+  document.getElementById('articleList').innerHTML = (res.items || []).map(a => `
+    <div class="card admin-article-item">
+      <div class="ai-main">
+        <a class="ai-title" href="/article/${a.id}" target="_blank">${a.title_zh || a.title}</a>
+        ${a.title_zh ? `<span class="ai-orig">${a.title}</span>` : ''}
+        <div class="ai-meta">
+          <span>${a.source || '未知来源'}</span>
+          <span>${a.category || '未分类'}</span>
+          <span>评分 ${a.score ?? '—'}</span>
+          <span class="status-tag st-${a.ai_status}">${STATUS_TEXT[a.ai_status] || a.ai_status}</span>
+        </div>
+      </div>
+      <div class="ai-ops">
+        <button class="btn btn-sm" onclick='editArticle(${JSON.stringify(a)})'>编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="delArticle(${a.id})">删除</button>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state"><p>没有符合条件的文章</p></div>';
+}
+
+async function editArticle(a) {
+  const titleZh = prompt('中文标题（留空清除）：', a.title_zh || '');
+  if (titleZh === null) return;
+  const category = prompt('分类（大模型/多模态/Agent/开源/硬件芯片/政策监管/论文/产品应用/行业动态）：', a.category || '');
+  if (category === null) return;
+  const score = prompt('重要性评分 1-5：', a.score ?? '');
+  if (score === null) return;
+  await api(`/api/admin/articles/${a.id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ title_zh: titleZh, category: category, score: parseInt(score) || null })
+  });
+  load(page);
+}
+
+async function delArticle(id) {
+  if (!confirm('确定删除该文章？不可恢复。')) return;
+  await api(`/api/admin/articles/${id}`, { method: 'DELETE' });
+  load(page);
+}
+
+load(1);
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}留言板 — AI 资讯站{% endblock %}
+
+{% block description %}欢迎留言交流：信息源推荐、功能建议、合作意向{% endblock %}
+
+{% block content %}
+<div class="container guestbook-page">
+  <section class="gb-head fade-up">
+    <h1 class="page-title">留言板</h1>
+    <p class="page-sub" style="margin-top: 6px">信息源推荐、功能建议、随便聊聊都欢迎（{{ total }} 条）</p>
+  </section>
+
+  <section class="card gb-form-card fade-up">
+    <form id="gbForm" class="gb-form">
+      <div class="gb-form-row">
+        <input class="gb-input" id="gbName" type="text" maxlength="20" placeholder="昵称（选填，默认匿名）" />
+        <input class="gb-input" id="gbContact" type="text" maxlength="100" placeholder="联系方式（选填，仅展示不校验）" />
+      </div>
+      <textarea class="gb-input gb-textarea" id="gbContent" maxlength="500" rows="4" placeholder="说点什么…（500 字以内）"></textarea>
+      <div class="gb-form-foot">
+        <span class="hint-text" id="gbHint"></span>
+        <button class="btn btn-primary" type="submit" id="gbSubmit">发表留言</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="gb-list">
+    {% for m in messages %}
+    <div class="card gb-item fade-up">
+      <div class="gb-item-head">
+        <span class="gb-avatar">{{ (m.name or '匿')[:1] }}</span>
+        <span class="gb-name">{{ m.name or '匿名' }}</span>
+        {% if m.contact %}<span class="gb-contact">{{ m.contact }}</span>{% endif %}
+        <span class="gb-time">{{ m.created_at | timelabel }}</span>
+      </div>
+      <p class="gb-content">{{ m.content }}</p>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">💬</div>
+      <p>还没有留言，来抢沙发！</p>
+    </div>
+    {% endfor %}
+  </section>
+
+  {% if pages > 1 %}
+  <div class="pager">
+    <a class="btn btn-sm {% if page <= 1 %}disabled{% endif %}" href="/guestbook?page={{ page - 1 }}">上一页</a>
+    <span class="pager-info">{{ page }} / {{ pages }}</span>
+    <a class="btn btn-sm {% if page >= pages %}disabled{% endif %}" href="/guestbook?page={{ page + 1 }}">下一页</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('gbForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const hint = document.getElementById('gbHint');
+  const btn = document.getElementById('gbSubmit');
+  const content = document.getElementById('gbContent').value.trim();
+  if (!content) { hint.textContent = '请先填写留言内容'; return; }
+  btn.disabled = true;
+  btn.textContent = '提交中…';
+  try {
+    const res = await fetch('/api/guestbook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: document.getElementById('gbName').value.trim(),
+        contact: document.getElementById('gbContact').value.trim(),
+        content: content
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      location.reload();
+    } else {
+      hint.textContent = (data && data.detail) || '提交失败，请稍后再试';
+      btn.disabled = false;
+      btn.textContent = '发表留言';
+    }
+  } catch (err) {
+    hint.textContent = '网络错误，请稍后再试';
+    btn.disabled = false;
+    btn.textContent = '发表留言';
+  }
+});
+</script>
+{% endblock %}

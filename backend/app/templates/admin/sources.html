@@ -1,0 +1,132 @@
+{% extends "admin/shell.html" %}
+
+{% block page %}
+<div class="head fade-up">
+  <h1 class="page-title">信息源管理</h1>
+  <button class="btn btn-primary btn-sm" onclick="openForm()">+ 添加信息源</button>
+</div>
+
+<div id="sourceList"></div>
+
+<div id="modalMask" class="modal-mask" style="display: none" onclick="if (event.target === this) closeModal()">
+  <form class="modal card" id="sourceForm">
+    <h2 class="block-title" id="modalTitle">添加信息源</h2>
+    <label>名称<input id="fName" required placeholder="如：机器之心" /></label>
+    <label>RSS / 页面地址<input id="fUrl" required placeholder="https://…" /></label>
+    <label>类型
+      <select id="fType">
+        <option value="rss">RSS</option>
+        <option value="web">网页</option>
+      </select>
+    </label>
+    <div class="action-row" style="justify-content: flex-end; margin-top: 4px;">
+      <button type="button" class="btn" onclick="closeModal()">取消</button>
+      <button type="submit" class="btn btn-primary">保存</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let editingId = null;
+
+function statusText(s) {
+  if (s === 'ok') return '<span class="status-ok">正常</span>';
+  if (s === 'failed') return '<span class="status-bad">失败</span>';
+  return '<span>未采集</span>';
+}
+
+function fmtTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}-${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+async function load() {
+  const res = await api('/api/admin/sources');
+  const box = document.getElementById('sourceList');
+  box.innerHTML = (res.items || []).map(s => `
+    <div class="card source-item fade-up">
+      <div class="info">
+        <div class="row1">
+          <span class="name">${s.name}</span>
+          <span class="tag-pill">${s.type}</span>
+          ${statusText(s.last_status)}
+        </div>
+        <a class="url" href="${s.url}" target="_blank" rel="noopener">${s.url}</a>
+        ${s.last_crawled_at ? `<span class="last">上次采集：${fmtTime(s.last_crawled_at)}</span>` : ''}
+      </div>
+      <div class="ops">
+        <button class="btn btn-sm ${s.enabled ? '' : 'btn-primary'}" onclick="toggle(${s.id})">${s.enabled ? '已启用' : '已禁用'}</button>
+        <button class="btn btn-sm" onclick="openForm(${JSON.stringify(s.id)})">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="removeSource(${s.id}, '${s.name.replace(/'/g, "\\'")}')">删除</button>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state"><p>暂无信息源</p></div>';
+}
+
+function findSource(id) {
+  return fetch('/api/admin/sources').then(r => r.json()).then(d => (d.items || []).find(x => x.id === id));
+}
+
+function openForm(id) {
+  editingId = id || null;
+  document.getElementById('modalTitle').textContent = id ? '编辑信息源' : '添加信息源';
+  const mask = document.getElementById('modalMask');
+  if (id) {
+    findSource(id).then(s => {
+      document.getElementById('fName').value = s.name;
+      document.getElementById('fUrl').value = s.url;
+      document.getElementById('fType').value = s.type;
+      mask.style.display = 'flex';
+    });
+  } else {
+    document.getElementById('fName').value = '';
+    document.getElementById('fUrl').value = '';
+    document.getElementById('fType').value = 'rss';
+    mask.style.display = 'flex';
+  }
+}
+
+function closeModal() {
+  document.getElementById('modalMask').style.display = 'none';
+}
+
+document.getElementById('sourceForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const body = {
+    name: document.getElementById('fName').value.trim(),
+    url: document.getElementById('fUrl').value.trim(),
+    type: document.getElementById('fType').value,
+    enabled: true
+  };
+  if (editingId) {
+    const s = await findSource(editingId);
+    body.enabled = s.enabled;
+    await api(`/api/admin/sources/${editingId}`, { method: 'PUT', body: JSON.stringify(body) });
+  } else {
+    await api('/api/admin/sources', { method: 'POST', body: JSON.stringify(body) });
+  }
+  closeModal();
+  load();
+});
+
+async function toggle(id) {
+  const s = await findSource(id);
+  await api(`/api/admin/sources/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ name: s.name, url: s.url, type: s.type, enabled: !s.enabled })
+  });
+  load();
+}
+
+async function removeSource(id, name) {
+  if (!confirm(`确定删除「${name}」？`)) return;
+  await api(`/api/admin/sources/${id}`, { method: 'DELETE' });
+  load();
+}
+
+load();
+</script>
+{% endblock %}

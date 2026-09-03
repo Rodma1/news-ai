@@ -1,0 +1,115 @@
+{% extends "admin/shell.html" %}
+
+{% block page %}
+<div class="head fade-up">
+  <h1 class="page-title">仪表盘</h1>
+  <button class="btn btn-sm" onclick="refresh()" id="refreshBtn">刷新</button>
+</div>
+
+<div class="stat-grid fade-up" id="statGrid"></div>
+
+<div class="card block fade-up">
+  <h2 class="block-title">手动操作</h2>
+  <div class="action-row">
+    <button class="btn" id="btnCrawl" onclick="run('crawl')">⟳ 立即采集</button>
+    <button class="btn" id="btnProcess" onclick="run('process')">✦ AI 处理</button>
+    <button class="btn btn-primary" id="btnDigest" onclick="run('digest')">📰 生成今日日报</button>
+  </div>
+  <p class="msg-text" id="actionMsg" style="display: none"></p>
+  <p class="hint-text">采集完成会自动进行 AI 处理；日报需要当日已有处理完成的文章</p>
+</div>
+
+<div class="card block fade-up">
+  <h2 class="block-title">浏览统计（近 7 日）</h2>
+  <div class="chart" id="viewChart"></div>
+  <p class="hint-text" id="viewTotal"></p>
+</div>
+
+<div class="card block fade-up">
+  <h2 class="block-title">热门文章 Top 10（按浏览量）</h2>
+  <div id="hotArticles"><p class="hint-text">加载中…</p></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function statCard(num, label, cls) {
+  return `<div class="card stat"><span class="stat-num ${cls || ''}">${num}</span><span class="stat-label">${label}</span></div>`;
+}
+
+async function refresh() {
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  try {
+    const s = await api('/api/admin/stats');
+    const ai = s.ai_status || {};
+    const src = s.sources || {};
+    document.getElementById('statGrid').innerHTML =
+      statCard(s.total ?? '—', '文章总量') +
+      statCard(s.today ?? '—', '今日新增', 'accent') +
+      statCard(ai.done ?? '—', 'AI 已处理') +
+      statCard(ai.pending ?? '—', '待处理', 'warn') +
+      statCard(s.digests ?? '—', '日报数') +
+      statCard(`${src.enabled ?? '—'}/${src.total ?? '—'}`, '启用信息源');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+const actionNames = { crawl: 'btnCrawl', process: 'btnProcess', digest: 'btnDigest' };
+const actionPaths = { crawl: '/api/admin/crawl', process: '/api/admin/process', digest: '/api/admin/digest' };
+const actionTexts = { crawl: '采集中…', process: '处理中…', digest: '生成中…' };
+
+async function run(name) {
+  const btn = document.getElementById(actionNames[name]);
+  const msg = document.getElementById('actionMsg');
+  btn.disabled = true;
+  btn.textContent = actionTexts[name];
+  msg.style.display = 'none';
+  try {
+    const res = await api(actionPaths[name], { method: 'POST' });
+    msg.textContent = res.message || '已开始，稍后刷新查看结果';
+    msg.style.display = 'block';
+    setTimeout(refresh, 1500);
+  } catch (ex) {
+    msg.textContent = ex.message;
+    msg.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = { crawl: '⟳ 立即采集', process: '✦ AI 处理', digest: '📰 生成今日日报' }[name];
+  }
+}
+
+async function loadViews() {
+  try {
+    const v = await api('/api/admin/views?days=7');
+    const days = v.days || [];
+    const maxPv = Math.max(1, ...days.map(d => d.pv));
+    document.getElementById('viewChart').innerHTML = days.map(d => `
+      <div class="chart-row">
+        <span class="chart-date">${d.date.slice(5)}</span>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar" style="width: ${Math.round(d.pv / maxPv * 100)}%"></div>
+        </div>
+        <span class="chart-num">${d.pv} / ${d.uv}</span>
+      </div>
+    `).join('');
+    document.getElementById('viewTotal').textContent = `格式：PV / UV（独立 IP）· 历史总浏览 ${v.total_pv} 次`;
+    const hot = v.hot || [];
+    document.getElementById('hotArticles').innerHTML = hot.length
+      ? hot.map((h, i) => `
+        <a class="hot-row" href="/article/${h.id}" target="_blank">
+          <span class="hot-rank-sm">${i + 1}</span>
+          <span class="hot-title-sm">${h.title}</span>
+          <span class="hot-pv">${h.pv} 次</span>
+        </a>`).join('')
+      : '<p class="hint-text">暂无浏览数据，访客阅读文章后这里会出现排行</p>';
+  } catch (ex) {
+    document.getElementById('viewTotal').textContent = '浏览统计加载失败';
+  }
+}
+
+refresh();
+loadViews();
+</script>
+{% endblock %}

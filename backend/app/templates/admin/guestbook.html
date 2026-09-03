@@ -1,0 +1,61 @@
+{% extends "admin/shell.html" %}
+
+{% block page %}
+<div class="head fade-up">
+  <h1 class="page-title">留言管理</h1>
+  <span class="total" id="totalInfo"></span>
+</div>
+
+<div id="msgList"></div>
+
+<div class="pager">
+  <button class="btn btn-sm" id="prevBtn" onclick="load(page - 1)">上一页</button>
+  <span class="pager-info" id="pageInfo"></span>
+  <button class="btn btn-sm" id="nextBtn" onclick="load(page + 1)">下一页</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let page = 1;
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+async function load(p) {
+  page = Math.max(1, p);
+  const res = await api(`/api/admin/guestbook?page=${page}`);
+  document.getElementById('totalInfo').textContent = `共 ${res.total} 条`;
+  document.getElementById('pageInfo').textContent = `${res.page} / ${res.pages}`;
+  document.getElementById('prevBtn').disabled = res.page <= 1;
+  document.getElementById('nextBtn').disabled = res.page >= res.pages;
+  document.getElementById('msgList').innerHTML = (res.items || []).map(m => `
+    <div class="card admin-article-item">
+      <div class="ai-main">
+        <div class="ai-meta" style="margin-bottom: 4px">
+          <span style="font-weight:600">${esc(m.name)}</span>
+          ${m.contact ? `<span>${esc(m.contact)}</span>` : ''}
+          <span>${(m.created_at || '').replace('T', ' ').slice(0, 16)}</span>
+          <span class="ai-orig">${esc(m.ip)}</span>
+        </div>
+        <div class="ai-content">${esc(m.content)}</div>
+      </div>
+      <div class="ai-ops">
+        <button class="btn btn-sm btn-danger" onclick="delMsg(${m.id})">删除</button>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state"><p>还没有留言</p></div>';
+}
+
+async function delMsg(id) {
+  if (!confirm('确定删除该留言？')) return;
+  await api(`/api/admin/guestbook/${id}`, { method: 'DELETE' });
+  load(page);
+}
+
+load(1);
+</script>
+{% endblock %}

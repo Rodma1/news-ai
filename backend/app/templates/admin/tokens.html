@@ -1,0 +1,84 @@
+{% extends "admin/shell.html" %}
+
+{% block page %}
+<div class="head fade-up">
+  <div>
+    <h1 class="page-title">推送 Token</h1>
+    <p class="page-sub" style="margin-top: 4px">本地任务通过以下接口推送文章：</p>
+    <code class="endpoint">POST /api/v1/news &nbsp;Header: Authorization: Bearer &lt;token&gt;</code>
+  </div>
+  <button class="btn btn-primary btn-sm" onclick="createToken()">+ 生成新 Token</button>
+</div>
+
+<div id="tokenList"></div>
+
+<section class="card block fade-up">
+  <h2 class="block-title">推送示例（curl）</h2>
+  <pre class="code-block">curl -X POST https://你的域名/api/v1/news \
+  -H "Authorization: Bearer &lt;token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "文章标题",
+    "url": "https://example.com/post",
+    "source": "我的采集",
+    "published_at": "2026-09-01T10:00:00",
+    "summary": "原文摘要",
+    "content": "文章正文（可选，AI 摘要会参考正文前 1200 字）",
+    "tags": ["标签1", "标签2"]
+  }'</pre>
+  <p class="hint-text">必填：title、url（重复推送会自动去重）。可选：source、published_at、summary、content（正文）、tags（数组）。也支持数组批量推送。详情页会展示 content 正文。</p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let reveal = {};
+
+function mask(t) {
+  return t.slice(0, 6) + '••••••••••••' + t.slice(-4);
+}
+
+async function load() {
+  const res = await api('/api/admin/tokens');
+  const box = document.getElementById('tokenList');
+  box.innerHTML = (res.items || []).map(t => `
+    <div class="card token-item fade-up">
+      <div class="token-info">
+        <code class="token-value">${reveal[t.id] ? t.token : mask(t.token)}</code>
+        ${t.note ? `<span class="note">${t.note}</span>` : ''}
+      </div>
+      <div class="ops">
+        <button class="btn btn-sm" onclick="toggleReveal(${t.id})">${reveal[t.id] ? '复制' : '显示'}</button>
+        <button class="btn btn-sm btn-danger" onclick="removeToken(${t.id})">删除</button>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state"><p>还没有 Token，生成一个给你的本地推送任务使用</p></div>';
+  window._tokens = res.items || [];
+}
+
+function toggleReveal(id) {
+  const t = window._tokens.find(x => x.id === id);
+  if (!t) return;
+  if (!reveal[id]) {
+    reveal[id] = true;
+    load();
+  } else {
+    navigator.clipboard.writeText(t.token).catch(() => {});
+  }
+}
+
+async function createToken() {
+  const note = prompt('Token 备注（可选）：') || '';
+  await api('/api/admin/tokens', { method: 'POST', body: JSON.stringify({ note }) });
+  load();
+}
+
+async function removeToken(id) {
+  if (!confirm('确定删除该 Token？使用它的本地任务将无法推送。')) return;
+  await api(`/api/admin/tokens/${id}`, { method: 'DELETE' });
+  load();
+}
+
+load();
+</script>
+{% endblock %}

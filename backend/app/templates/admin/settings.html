@@ -1,0 +1,107 @@
+{% extends "admin/shell.html" %}
+
+{% block page %}
+<h1 class="page-title fade-up" style="margin-bottom: 18px">设置</h1>
+
+<section class="card block form-block fade-up">
+  <h2 class="block-title">大模型 API</h2>
+  <p class="hint-text" id="keyHint" style="margin: 0 0 4px"></p>
+  <label>接口地址（OpenAI 兼容）<input id="llm_base_url" placeholder="https://api.deepseek.com" /></label>
+  <label>API Key<input id="llm_api_key" placeholder="sk-…（留空则不修改）" /></label>
+  <label>模型名称<input id="llm_model" placeholder="deepseek-chat" /></label>
+</section>
+
+<section class="card block form-block fade-up">
+  <h2 class="block-title">采集与日报</h2>
+  <label>采集时段（逗号分隔 HH:MM）<input id="crawl_times" placeholder="07:00,12:00,20:00" /></label>
+  <label>日报生成时间<input id="digest_time" placeholder="21:00" /></label>
+  <label>每日 AI 处理上限（篇）<input id="max_ai_per_day" type="number" min="1" /></label>
+</section>
+
+<div class="save-row fade-up">
+  <button class="btn btn-primary" id="saveBtn" onclick="save()">保存设置</button>
+  <span class="ok-text" id="saveMsg" style="display: none">已保存</span>
+</div>
+
+<section class="card block form-block fade-up">
+  <h2 class="block-title">修改管理员密码</h2>
+  <label>旧密码<input id="oldPwd" type="password" autocomplete="current-password" /></label>
+  <label>新密码（至少6位）<input id="newPwd" type="password" autocomplete="new-password" /></label>
+  <div class="save-row" style="margin: 0">
+    <button class="btn" id="pwdBtn" onclick="changePwd()">修改密码</button>
+    <span class="ok-text" id="pwdMsg" style="display: none"></span>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function load() {
+  const s = await api('/api/admin/settings');
+  document.getElementById('llm_base_url').value = s.llm_base_url;
+  document.getElementById('llm_model').value = s.llm_model;
+  document.getElementById('crawl_times').value = s.crawl_times;
+  document.getElementById('digest_time').value = s.digest_time;
+  document.getElementById('max_ai_per_day').value = s.max_ai_per_day;
+  const hint = document.getElementById('keyHint');
+  const keyInput = document.getElementById('llm_api_key');
+  if (s.llm_api_key_set) {
+    hint.textContent = `已配置 Key（${s.llm_api_key}），留空表示不修改`;
+    keyInput.placeholder = '留空则不修改';
+  } else {
+    hint.textContent = '尚未配置 API Key，AI 处理暂不可用（文章仍可正常采集展示）';
+  }
+}
+
+async function save() {
+  const btn = document.getElementById('saveBtn');
+  const msg = document.getElementById('saveMsg');
+  btn.disabled = true;
+  try {
+    await api('/api/admin/settings', {
+      method: 'PUT',
+      body: JSON.stringify({
+        llm_base_url: document.getElementById('llm_base_url').value.trim(),
+        llm_api_key: document.getElementById('llm_api_key').value.trim(),
+        llm_model: document.getElementById('llm_model').value.trim(),
+        crawl_times: document.getElementById('crawl_times').value.trim(),
+        digest_time: document.getElementById('digest_time').value.trim(),
+        max_ai_per_day: parseInt(document.getElementById('max_ai_per_day').value) || 50
+      })
+    });
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    await load();
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function changePwd() {
+  const btn = document.getElementById('pwdBtn');
+  const msg = document.getElementById('pwdMsg');
+  btn.disabled = true;
+  msg.style.display = 'none';
+  try {
+    await api('/api/admin/password', {
+      method: 'PUT',
+      body: JSON.stringify({
+        old_password: document.getElementById('oldPwd').value,
+        new_password: document.getElementById('newPwd').value
+      })
+    });
+    msg.textContent = '密码已修改';
+    msg.style.display = 'inline';
+    document.getElementById('oldPwd').value = '';
+    document.getElementById('newPwd').value = '';
+  } catch (ex) {
+    msg.textContent = ex.message;
+    msg.style.display = 'inline';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+load();
+</script>
+{% endblock %}

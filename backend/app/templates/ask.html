@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}AI 资讯问答 — AI 资讯站{% endblock %}
+
+{% block content %}
+<div class="container ask-container">
+  <section class="ask-head fade-up">
+    <h1 class="page-title">AI 资讯问答</h1>
+    <p class="page-sub">基于已采集的文章内容回答，附引用来源</p>
+  </section>
+
+  <div class="chat card fade-up" id="chatBox">
+    <div class="chat-empty" id="chatEmpty">
+      <div class="empty-icon">💬</div>
+      <p>问点什么吧，例如：</p>
+      <div class="suggestions">
+        <button class="tag-pill suggestion" onclick="ask('本周有哪些大模型发布？')">本周有哪些大模型发布？</button>
+        <button class="tag-pill suggestion" onclick="ask('最近 Agent 领域有什么新进展？')">最近 Agent 领域有什么新进展？</button>
+        <button class="tag-pill suggestion" onclick="ask('开源模型最新动态')">开源模型最新动态</button>
+      </div>
+    </div>
+  </div>
+
+  <form class="input-bar" id="askForm">
+    <input id="askInput" placeholder="输入你的问题…" autocomplete="off" />
+    <button type="submit" class="btn btn-primary" id="askBtn">发送</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const chatBox = document.getElementById('chatBox');
+const askInput = document.getElementById('askInput');
+const askBtn = document.getElementById('askBtn');
+const empty = document.getElementById('chatEmpty');
+let thinking = false;
+
+function scrollBottom() {
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function addUser(text) {
+  empty.style.display = 'none';
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `<div class="bubble user-bubble"></div>`;
+  div.firstChild.textContent = text;
+  chatBox.appendChild(div);
+  scrollBottom();
+}
+
+function addAssistant(answer, sources) {
+  const div = document.createElement('div');
+  div.className = 'msg';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble assistant-bubble';
+  const p = document.createElement('div');
+  p.className = 'answer';
+  p.textContent = answer;
+  bubble.appendChild(p);
+  if (sources && sources.length) {
+    const box = document.createElement('div');
+    box.className = 'sources';
+    const label = document.createElement('span');
+    label.className = 'sources-label';
+    label.textContent = '引用来源';
+    box.appendChild(label);
+    for (const s of sources) {
+      const a = document.createElement('a');
+      a.className = 'source-item';
+      a.href = s.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      const name = document.createElement('span');
+      name.className = 'source-name';
+      name.textContent = s.source;
+      const title = document.createElement('span');
+      title.className = 'source-title';
+      title.textContent = s.title;
+      a.appendChild(name);
+      a.appendChild(title);
+      box.appendChild(a);
+    }
+    bubble.appendChild(box);
+  }
+  div.appendChild(bubble);
+  chatBox.appendChild(div);
+  scrollBottom();
+}
+
+function addThinking() {
+  const div = document.createElement('div');
+  div.className = 'msg';
+  div.id = 'thinking';
+  div.innerHTML = '<div class="bubble assistant-bubble thinking"><span></span><span></span><span></span></div>';
+  chatBox.appendChild(div);
+  scrollBottom();
+}
+
+function removeThinking() {
+  const t = document.getElementById('thinking');
+  if (t) t.remove();
+}
+
+async function ask(text) {
+  const q = (text || askInput.value || '').trim();
+  if (!q || thinking) return;
+  thinking = true;
+  askBtn.disabled = true;
+  askInput.value = '';
+  addUser(q);
+  addThinking();
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q })
+    });
+    const data = await res.json();
+    removeThinking();
+    addAssistant(data.answer || '请求失败，请稍后重试。', data.sources || []);
+  } catch (e) {
+    removeThinking();
+    addAssistant('请求失败，请稍后重试。', []);
+  } finally {
+    thinking = false;
+    askBtn.disabled = false;
+  }
+}
+
+document.getElementById('askForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  ask('');
+});
+</script>
+{% endblock %}

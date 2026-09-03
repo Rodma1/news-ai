@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# 环境变量与密钥（切勿提交）
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# 运行时数据：数据库、备份、日志
+backend/data/
+*.db
+*.db-journal
+*.log
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node（备用，当前未用）
+node_modules/
+
+# 前端构建产物
+dist/

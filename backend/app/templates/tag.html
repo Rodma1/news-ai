@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}标签：{{ tag_name }} — AI 资讯站{% endblock %}
+
+{% block description %}标签「{{ tag_name }}」下的全部 AI 资讯{% endblock %}
+
+{% block content %}
+<div class="container">
+  <section class="tag-head fade-up">
+    <h1 class="page-title"># {{ tag_name }}</h1>
+    <p class="page-sub" style="margin-top: 6px">{{ total }} 篇相关资讯</p>
+  </section>
+
+  <section class="feed">
+    {% for a in articles %}
+    <a class="article-card fade-up" href="/article/{{ a.id }}">
+      <div class="card-top">
+        {% if a.category %}<span class="tag-pill category">{{ a.category }}</span>{% endif %}
+        <span class="source">{{ a.source }}</span>
+        <span class="time">{{ a.time_label }}</span>
+        <span class="spacer"></span>
+        <span class="score" title="重要性 {{ a.score or 0 }}/5">
+          {% for i in range(1, 6) %}<i class="dot {% if i <= (a.score or 0) %}on{% endif %}"></i>{% endfor %}
+        </span>
+      </div>
+      <h3 class="title">
+        {% if a.title_zh %}{{ a.title_zh }}<span class="title-orig">{{ a.title }}</span>{% else %}{{ a.title }}{% endif %}
+      </h3>
+      {% if a.summary %}<p class="summary">{{ a.summary }}</p>{% endif %}
+      <div class="card-bottom">
+        <div class="tags">
+          {% for t in a.tags[:4] %}<span class="tag-pill">{{ t }}</span>{% endfor %}
+        </div>
+        <span class="read-link">查看详情 →</span>
+      </div>
+    </a>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">🏷</div>
+      <p>该标签下暂无文章</p>
+    </div>
+    {% endfor %}
+  </section>
+
+  {% if pages > 1 %}
+  <div class="pager">
+    <a class="btn btn-sm {% if page <= 1 %}disabled{% endif %}" href="/tag/{{ tag_name|urlencode }}?page={{ page - 1 }}">上一页</a>
+    <span class="pager-info">{{ page }} / {{ pages }}</span>
+    <a class="btn btn-sm {% if page >= pages %}disabled{% endif %}" href="/tag/{{ tag_name|urlencode }}?page={{ page + 1 }}">下一页</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

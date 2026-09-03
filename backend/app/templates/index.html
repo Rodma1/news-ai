@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  <section class="hero fade-up">
+    <h1 class="hero-title">看清今天的 <span class="grad">AI 世界</span></h1>
+    <p class="hero-sub">每日自动采集高质量 AI 资讯，大模型提炼摘要、评分与趋势</p>
+    <form class="search-wrap" method="get" action="/">
+      {% if category %}<input type="hidden" name="category" value="{{ category }}" />{% endif %}
+      {% if source %}<input type="hidden" name="source" value="{{ source }}" />{% endif %}
+      {% if sort != 'time' %}<input type="hidden" name="sort" value="{{ sort }}" />{% endif %}
+      <input class="search-input" type="search" name="q" value="{{ q }}" placeholder="搜索标题关键词…" />
+      <button class="btn btn-primary" type="submit">搜索</button>
+    </form>
+  </section>
+
+  {% if digest and digest.date %}
+  <a class="digest-strip card fade-up" href="/digest?date={{ digest.date }}">
+    <div class="strip-left">
+      <span class="strip-badge">最新日报 · {{ digest.date }}</span>
+      <div class="strip-events">
+        {% for e in (digest.top_events or [])[:2] %}
+        <div class="strip-event">
+          <span class="strip-title">{{ e.title }}</span>
+          {% if e.comment %}<span class="strip-comment">{{ e.comment }}</span>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <span class="strip-more">查看日报 →</span>
+  </a>
+  {% endif %}
+
+  {% if hot_week %}
+  <section class="hot-week fade-up">
+    <div class="hot-head">
+      <span class="hot-flame">🔥</span>
+      <h2 class="hot-title">本周热门</h2>
+      <span class="hot-sub">高分精选 · 近 7 天</span>
+    </div>
+    <div class="hot-grid">
+      {% for h in hot_week %}
+      <a class="hot-card" href="/article/{{ h.id }}">
+        <div class="hot-rank">{{ loop.index }}</div>
+        <div class="hot-body">
+          <div class="hot-meta">
+            {% if h.category %}<span class="tag-pill category">{{ h.category }}</span>{% endif %}
+            <span class="hot-source">{{ h.source }}</span>
+            <span class="hot-time">{{ h.time_label }}</span>
+          </div>
+          <h3 class="hot-name">{% if h.title_zh %}{{ h.title_zh }}{% else %}{{ h.title }}{% endif %}</h3>
+          {% if h.summary %}<p class="hot-summary">{{ h.summary }}</p>{% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="filters fade-up">
+    <div class="filter-group">
+      <a class="chip {% if sort == 'time' %}active{% endif %}" href="/?sort=time{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">最新</a>
+      <a class="chip {% if sort == 'score' %}active{% endif %}" href="/?sort=score{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">重要</a>
+    </div>
+    <form method="get" action="/" class="filters" style="gap: 10px; margin-bottom: 0;">
+      {% if q %}<input type="hidden" name="q" value="{{ q }}" />{% endif %}
+      <input type="hidden" name="sort" value="{{ sort }}" />
+      <select name="category" class="filter-select" onchange="this.form.submit()">
+        <option value="">全部分类</option>
+        {% for c in categories %}
+        <option value="{{ c }}" {% if c == category %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+      <select name="source" class="filter-select" onchange="this.form.submit()">
+        <option value="">全部来源</option>
+        {% for s in sources %}
+        <option value="{{ s }}" {% if s == source %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    <span class="total">{{ total }} 条结果</span>
+  </section>
+
+  <section class="feed">
+    {% for a in articles %}
+    <a class="article-card fade-up" href="/article/{{ a.id }}">
+      <div class="card-top">
+        {% if a.category %}<span class="tag-pill category">{{ a.category }}</span>{% endif %}
+        <span class="source">{{ a.source }}</span>
+        <span class="time">{{ a.time_label }}</span>
+        <span class="spacer"></span>
+        <span class="score" title="重要性 {{ a.score or 0 }}/5">
+          {% for i in range(1, 6) %}<i class="dot {% if i <= (a.score or 0) %}on{% endif %}"></i>{% endfor %}
+        </span>
+      </div>
+      <h3 class="title">
+        {% if a.title_zh %}{{ a.title_zh }}<span class="title-orig">{{ a.title }}</span>{% else %}{{ a.title }}{% endif %}
+      </h3>
+      {% if a.summary %}<p class="summary">{{ a.summary }}</p>{% endif %}
+      <div class="card-bottom">
+        <div class="tags">
+          {% for t in a.tags[:4] %}<a class="tag-pill tag-link" href="/tag/{{ t|urlencode }}"># {{ t }}</a>{% endfor %}
+        </div>
+        <span class="read-link">查看详情 →</span>
+      </div>
+    </a>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">📡</div>
+      <p>暂无文章，等待采集任务运行</p>
+    </div>
+    {% endfor %}
+  </section>
+
+  {% if pages > 1 %}
+  <div class="pager">
+    {% set keep = '' %}
+    <a class="btn btn-sm {% if page <= 1 %}disabled{% endif %}" href="/?page={{ page - 1 }}{% if sort != 'time' %}&amp;sort={{ sort }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">上一页</a>
+    <span class="pager-info">{{ page }} / {{ pages }}</span>
+    <a class="btn btn-sm {% if page >= pages %}disabled{% endif %}" href="/?page={{ page + 1 }}{% if sort != 'time' %}&amp;sort={{ sort }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">下一页</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ a.title_zh or a.title }} — AI 资讯站{% endblock %}
+
+{% block description %}{{ (a.summary or a.title)[:150] }}{% endblock %}
+
+{% block og_title %}{{ a.title_zh or a.title }}{% endblock %}
+{% block og_description %}{{ (a.summary or a.title)[:200] }}{% endblock %}
+
+{% block content %}
+<div class="container detail">
+  <a href="/" class="back">← 返回资讯列表</a>
+  <article class="card detail-content fade-up">
+    <div class="meta">
+      {% if a.category %}<span class="tag-pill category">{{ a.category }}</span>{% endif %}
+      <span class="source">{{ a.source }}</span>
+      <span class="time">{{ published }}</span>
+      <span class="spacer"></span>
+      <span class="score" title="重要性 {{ a.score or 0 }}/5">
+        {% for i in range(1, 6) %}<i class="dot {% if i <= (a.score or 0) %}on{% endif %}"></i>{% endfor %}
+      </span>
+    </div>
+    <h1>
+      {{ a.title_zh or a.title }}
+      {% if a.title_zh %}<span class="title-orig">{{ a.title }}</span>{% endif %}
+    </h1>
+    {% if a.summary and a.ai_ready %}
+    <div class="ai-summary-box">
+      <div class="label">AI 中文摘要</div>
+      <p>{{ a.summary }}</p>
+    </div>
+    {% endif %}
+    {% if a.summary_raw %}
+    <div class="orig-summary-box">
+      <div class="label">原文摘要</div>
+      <p>{{ a.summary_raw }}</p>
+    </div>
+    {% endif %}
+    {% if a.tags %}
+    <div class="detail-tags">
+      {% for t in a.tags %}<a class="tag-pill tag-link" href="/tag/{{ t|urlencode }}"># {{ t }}</a>{% endfor %}
+    </div>
+    {% endif %}
+    {% if a.entities %}
+    <div class="entities">
+      <span class="entity-label">涉及：</span>
+      {% for e in a.entities %}<span class="tag-pill">{{ e }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    {% if a.content %}
+    <div class="article-body">
+      <div class="label">正文节选</div>
+      <p>{{ a.content[:3000] }}{% if a.content|length > 3000 %}<span class="body-more">……（正文过长已截断）</span>{% endif %}</p>
+    </div>
+    {% endif %}
+    <a class="btn btn-primary" href="{{ a.url }}" target="_blank" rel="noopener">阅读原文 ↗</a>
+  </article>
+
+  {% if related %}
+  <section class="card detail-related fade-up">
+    <h2 class="section-title">相关阅读</h2>
+    <div class="related-list">
+      {% for r in related %}
+      <a class="related-item" href="/article/{{ r.id }}">
+        <span class="related-title">{{ r.title }}</span>
+        <span class="related-meta">{% if r.category %}{{ r.category }} · {% endif %}{{ r.time_label }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
