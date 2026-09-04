@@ -23,7 +23,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   btn.disabled = true;
   err.style.display = 'none';
   try {
-    const res = await fetch('/api/admin/login', {
+    const res = await fetch('/news/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -37,7 +37,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
     const data = await res.json();
     document.cookie = `admin_token=${data.token}; path=/; max-age=86400; samesite=lax`;
-    location.href = '/admin/dashboard';
+    location.href = '/news/admin/dashboard';
   } catch (ex) {
     err.textContent = ex.message;
     err.style.display = 'block';

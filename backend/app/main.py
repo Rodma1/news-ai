@@ -221,7 +221,7 @@ def article_page(article_id: int, request: Request):
     try:
         art = db.get(Article, article_id)
         if not art:
-            return RedirectResponse("/", status_code=302)
+            return RedirectResponse("/news/", status_code=302)
         _track(request, f"/article/{article_id}", article_id)
         a = public.article_to_dict(art)
         related = [
@@ -332,23 +332,23 @@ ADMIN_PAGES = {"dashboard", "articles", "guestbook", "sources", "settings", "tok
 @app.get("/admin")
 def admin_root(request: Request):
     if is_logged_in(request):
-        return RedirectResponse("/admin/dashboard", status_code=302)
-    return RedirectResponse("/admin/login", status_code=302)
+        return RedirectResponse("/news/admin/dashboard", status_code=302)
+    return RedirectResponse("/news/admin/login", status_code=302)
 
 
 @app.get("/admin/login")
 def admin_login_page(request: Request):
     if is_logged_in(request):
-        return RedirectResponse("/admin/dashboard", status_code=302)
+        return RedirectResponse("/news/admin/dashboard", status_code=302)
     return templates.TemplateResponse(request, "admin/login.html", {"request": request})
 
 
 @app.get("/admin/{page}")
 def admin_page(page: str, request: Request):
     if page not in ADMIN_PAGES:
-        return RedirectResponse("/admin", status_code=302)
+        return RedirectResponse("/news/admin", status_code=302)
     if not is_logged_in(request):
-        return RedirectResponse("/admin/login", status_code=302)
+        return RedirectResponse("/news/admin/login", status_code=302)
     return templates.TemplateResponse(request, f"admin/{page}.html", {"request": request, "page": page})
 
 

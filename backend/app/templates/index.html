@@ -5,7 +5,7 @@
   <section class="hero fade-up">
     <h1 class="hero-title">看清今天的 <span class="grad">AI 世界</span></h1>
     <p class="hero-sub">每日自动采集高质量 AI 资讯，大模型提炼摘要、评分与趋势</p>
-    <form class="search-wrap" method="get" action="/">
+    <form class="search-wrap" method="get" action="/news/">
       {% if category %}<input type="hidden" name="category" value="{{ category }}" />{% endif %}
       {% if source %}<input type="hidden" name="source" value="{{ source }}" />{% endif %}
       {% if sort != 'time' %}<input type="hidden" name="sort" value="{{ sort }}" />{% endif %}
@@ -15,7 +15,7 @@
   </section>
 
   {% if digest and digest.date %}
-  <a class="digest-strip card fade-up" href="/digest?date={{ digest.date }}">
+  <a class="digest-strip card fade-up" href="/news/digest?date={{ digest.date }}">
     <div class="strip-left">
       <span class="strip-badge">最新日报 · {{ digest.date }}</span>
       <div class="strip-events">
@@ -40,7 +40,7 @@
     </div>
     <div class="hot-grid">
       {% for h in hot_week %}
-      <a class="hot-card" href="/article/{{ h.id }}">
+      <a class="hot-card" href="/news/article/{{ h.id }}">
         <div class="hot-rank">{{ loop.index }}</div>
         <div class="hot-body">
           <div class="hot-meta">
@@ -59,10 +59,10 @@
 
   <section class="filters fade-up">
     <div class="filter-group">
-      <a class="chip {% if sort == 'time' %}active{% endif %}" href="/?sort=time{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">最新</a>
-      <a class="chip {% if sort == 'score' %}active{% endif %}" href="/?sort=score{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">重要</a>
+      <a class="chip {% if sort == 'time' %}active{% endif %}" href="/news/?sort=time{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">最新</a>
+      <a class="chip {% if sort == 'score' %}active{% endif %}" href="/news/?sort=score{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">重要</a>
     </div>
-    <form method="get" action="/" class="filters" style="gap: 10px; margin-bottom: 0;">
+    <form method="get" action="/news/" class="filters" style="gap: 10px; margin-bottom: 0;">
       {% if q %}<input type="hidden" name="q" value="{{ q }}" />{% endif %}
       <input type="hidden" name="sort" value="{{ sort }}" />
       <select name="category" class="filter-select" onchange="this.form.submit()">
@@ -83,7 +83,8 @@
 
   <section class="feed">
     {% for a in articles %}
-    <a class="article-card fade-up" href="/article/{{ a.id }}">
+    <div class="article-card fade-up">
+    <a class="article-card-link" href="/news/article/{{ a.id }}" aria-label="查看详情"></a>
       <div class="card-top">
         {% if a.category %}<span class="tag-pill category">{{ a.category }}</span>{% endif %}
         <span class="source">{{ a.source }}</span>
@@ -99,11 +100,11 @@
       {% if a.summary %}<p class="summary">{{ a.summary }}</p>{% endif %}
       <div class="card-bottom">
         <div class="tags">
-          {% for t in a.tags[:4] %}<a class="tag-pill tag-link" href="/tag/{{ t|urlencode }}"># {{ t }}</a>{% endfor %}
+          {% for t in a.tags[:4] %}<a class="tag-pill tag-link" href="/news/tag/{{ t|urlencode }}"># {{ t }}</a>{% endfor %}
         </div>
         <span class="read-link">查看详情 →</span>
       </div>
-    </a>
+    </div>
     {% else %}
     <div class="empty-state">
       <div class="icon">📡</div>
@@ -115,9 +116,9 @@
   {% if pages > 1 %}
   <div class="pager">
     {% set keep = '' %}
-    <a class="btn btn-sm {% if page <= 1 %}disabled{% endif %}" href="/?page={{ page - 1 }}{% if sort != 'time' %}&amp;sort={{ sort }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">上一页</a>
+    <a class="btn btn-sm {% if page <= 1 %}disabled{% endif %}" href="/news/?page={{ page - 1 }}{% if sort != 'time' %}&amp;sort={{ sort }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">上一页</a>
     <span class="pager-info">{{ page }} / {{ pages }}</span>
-    <a class="btn btn-sm {% if page >= pages %}disabled{% endif %}" href="/?page={{ page + 1 }}{% if sort != 'time' %}&amp;sort={{ sort }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">下一页</a>
+    <a class="btn btn-sm {% if page >= pages %}disabled{% endif %}" href="/news/?page={{ page + 1 }}{% if sort != 'time' %}&amp;sort={{ sort }}{% endif %}{% if category %}&amp;category={{ category|urlencode }}{% endif %}{% if source %}&amp;source={{ source|urlencode }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}">下一页</a>
   </div>
   {% endif %}
 </div>

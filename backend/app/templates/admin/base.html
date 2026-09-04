@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex" />
   <title>{% block title %}管理后台 — AI 资讯站{% endblock %}</title>
-  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/main.css') }}" />
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a href="/" class="brand">
+      <a href="/news/" class="brand">
         <span class="brand-mark">AI</span>
         <span class="brand-name">资讯站</span>
       </a>
       <nav class="nav">
-        <a href="/" class="nav-link">← 返回前台</a>
+        <a href="/news/" class="nav-link">← 返回前台</a>
       </nav>
     </div>
   </header>

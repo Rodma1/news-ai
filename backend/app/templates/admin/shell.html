@@ -5,12 +5,12 @@
   <aside class="sidebar">
     <div class="side-brand"><span class="brand-mark">AI</span><span>管理后台</span></div>
     <nav class="side-nav">
-      <a class="side-link {% if page == 'dashboard' %}active{% endif %}" href="/admin/dashboard">仪表盘</a>
-      <a class="side-link {% if page == 'articles' %}active{% endif %}" href="/admin/articles">文章管理</a>
-      <a class="side-link {% if page == 'guestbook' %}active{% endif %}" href="/admin/guestbook">留言管理</a>
-      <a class="side-link {% if page == 'sources' %}active{% endif %}" href="/admin/sources">信息源</a>
-      <a class="side-link {% if page == 'settings' %}active{% endif %}" href="/admin/settings">设置</a>
-      <a class="side-link {% if page == 'tokens' %}active{% endif %}" href="/admin/tokens">推送 Token</a>
+      <a class="side-link {% if page == 'dashboard' %}active{% endif %}" href="/news/admin/dashboard">仪表盘</a>
+      <a class="side-link {% if page == 'articles' %}active{% endif %}" href="/news/admin/articles">文章管理</a>
+      <a class="side-link {% if page == 'guestbook' %}active{% endif %}" href="/news/admin/guestbook">留言管理</a>
+      <a class="side-link {% if page == 'sources' %}active{% endif %}" href="/news/admin/sources">信息源</a>
+      <a class="side-link {% if page == 'settings' %}active{% endif %}" href="/news/admin/settings">设置</a>
+      <a class="side-link {% if page == 'tokens' %}active{% endif %}" href="/news/admin/tokens">推送 Token</a>
     </nav>
     <button class="side-link logout" onclick="logout()">退出登录</button>
   </aside>
@@ -18,23 +18,22 @@
     {% block page %}{% endblock %}
   </main>
 </div>
-{% endblock %}
-
-{% block scripts %}
 <script>
 function logout() {
   document.cookie = 'admin_token=; path=/; max-age=0';
-  location.href = '/admin/login';
+  location.href = '/news/admin/login';
 }
 async function api(path, options = {}) {
   const res = await fetch(path, {
     headers: { 'Content-Type': 'application/json' },
     ...options
   });
-  if (res.status === 401) { location.href = '/admin/login'; throw new Error('unauthorized'); }
+  if (res.status === 401) { location.href = '/news/admin/login'; throw new Error('unauthorized'); }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.detail || ('HTTP ' + res.status));
   return data;
 }
 </script>
 {% endblock %}
+
+{% block scripts %}{% endblock %}

@@ -13,7 +13,8 @@
 
   <section class="feed">
     {% for a in articles %}
-    <a class="article-card fade-up" href="/article/{{ a.id }}">
+    <div class="article-card fade-up">
+    <a class="article-card-link" href="/news/article/{{ a.id }}" aria-label="查看详情"></a>
       <div class="card-top">
         {% if a.category %}<span class="tag-pill category">{{ a.category }}</span>{% endif %}
         <span class="source">{{ a.source }}</span>
@@ -33,7 +34,7 @@
         </div>
         <span class="read-link">查看详情 →</span>
       </div>
-    </a>
+    </div>
     {% else %}
     <div class="empty-state">
       <div class="icon">🏷</div>
@@ -44,9 +45,9 @@
 
   {% if pages > 1 %}
   <div class="pager">
-    <a class="btn btn-sm {% if page <= 1 %}disabled{% endif %}" href="/tag/{{ tag_name|urlencode }}?page={{ page - 1 }}">上一页</a>
+    <a class="btn btn-sm {% if page <= 1 %}disabled{% endif %}" href="/news/tag/{{ tag_name|urlencode }}?page={{ page - 1 }}">上一页</a>
     <span class="pager-info">{{ page }} / {{ pages }}</span>
-    <a class="btn btn-sm {% if page >= pages %}disabled{% endif %}" href="/tag/{{ tag_name|urlencode }}?page={{ page + 1 }}">下一页</a>
+    <a class="btn btn-sm {% if page >= pages %}disabled{% endif %}" href="/news/tag/{{ tag_name|urlencode }}?page={{ page + 1 }}">下一页</a>
   </div>
   {% endif %}
 </div>

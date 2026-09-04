@@ -12,7 +12,7 @@
   {% if dates %}
   <div class="date-scroller fade-up">
     {% for d in dates %}
-    <a class="date-chip {% if d == current.date %}active{% endif %}" href="/digest?date={{ d }}">{{ d[5:] }}</a>
+    <a class="date-chip {% if d == current.date %}active{% endif %}" href="/news/digest?date={{ d }}">{{ d[5:] }}</a>
     {% endfor %}
   </div>
   {% endif %}

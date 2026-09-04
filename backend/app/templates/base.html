@@ -20,22 +20,22 @@
   <meta property="og:site_name" content="AI 资讯站" />
   <meta name="twitter:card" content="summary_large_image" />
   <title>{% block title %}AI 资讯站 — 每日精选 AI 资讯与大模型日报{% endblock %}</title>
-  <link rel="alternate" type="application/rss+xml" title="AI 资讯站 RSS" href="/rss" />
-  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="alternate" type="application/rss+xml" title="AI 资讯站 RSS" href="/news/rss" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/main.css') }}" />
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a href="/" class="brand">
+      <a href="/news/" class="brand">
         <span class="brand-mark">AI</span>
         <span class="brand-name">资讯站</span>
       </a>
       <nav class="nav">
-        <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">资讯</a>
-        <a href="/digest" class="nav-link {% if request.url.path.startswith('/digest') %}active{% endif %}">日报</a>
-        <a href="/ask" class="nav-link {% if request.url.path.startswith('/ask') %}active{% endif %}">问答</a>
-        <a href="/guestbook" class="nav-link {% if request.url.path.startswith('/guestbook') %}active{% endif %}">留言</a>
-        <a href="/about" class="nav-link {% if request.url.path.startswith('/about') %}active{% endif %}">关于</a>
+        <a href="/news/" class="nav-link {% if request.url.path == '/news/' %}active{% endif %}">资讯</a>
+        <a href="/news/digest" class="nav-link {% if request.url.path.startswith('/news/digest') %}active{% endif %}">日报</a>
+        <a href="/news/ask" class="nav-link {% if request.url.path.startswith('/news/ask') %}active{% endif %}">问答</a>
+        <a href="/news/guestbook" class="nav-link {% if request.url.path.startswith('/news/guestbook') %}active{% endif %}">留言</a>
+        <a href="/news/about" class="nav-link {% if request.url.path.startswith('/news/about') %}active{% endif %}">关于</a>
       </nav>
       <div class="header-right">
         {% if stats and stats.today is defined %}
@@ -58,7 +58,7 @@
       <span>AI 资讯站</span>
       <span class="footer-dot">·</span>
       <span>每日自动采集 · 大模型整合</span>
-      <a href="/admin" class="footer-admin">管理</a>
+      <a href="/news/admin" class="footer-admin">管理</a>
     </div>
   </footer>
 

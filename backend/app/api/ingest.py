@@ -4,7 +4,7 @@ import time
 from collections import defaultdict, deque
 from typing import Any
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Body, Header, HTTPException, Request
 
 from ..config import settings
 from ..models import ApiToken, SessionLocal
@@ -43,7 +43,7 @@ def _check_rate(key: str) -> bool:
 @router.post("/news")
 def push_news(
     request: Request,
-    payload: Any,
+    payload: Any = Body(...),
     authorization: str = Header(default=""),
 ):
     token = authorization[7:].strip() if authorization.startswith("Bearer ") else ""
@@ -78,7 +78,7 @@ def push_news(
 @router.post("/news/update")
 def update_news(
     request: Request,
-    payload: Any,
+    payload: Any = Body(...),
     authorization: str = Header(default=""),
 ):
     from ..models import Article, SessionLocal
@@ -145,7 +145,7 @@ def update_news(
 @router.post("/digest")
 def push_digest(
     request: Request,
-    payload: Any,
+    payload: Any = Body(...),
     authorization: str = Header(default=""),
 ):
     import json as _json

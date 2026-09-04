@@ -38,7 +38,7 @@ async function load(p) {
   page = Math.max(1, p);
   const q = document.getElementById('q').value.trim();
   const status = document.getElementById('status').value;
-  const res = await api(`/api/admin/articles?page=${page}&q=${encodeURIComponent(q)}&status=${status}`);
+  const res = await api(`/news/api/admin/articles?page=${page}&q=${encodeURIComponent(q)}&status=${status}`);
   document.getElementById('totalInfo').textContent = `共 ${res.total} 条`;
   document.getElementById('pageInfo').textContent = `${res.page} / ${res.pages}`;
   document.getElementById('prevBtn').disabled = res.page <= 1;
@@ -46,7 +46,7 @@ async function load(p) {
   document.getElementById('articleList').innerHTML = (res.items || []).map(a => `
     <div class="card admin-article-item">
       <div class="ai-main">
-        <a class="ai-title" href="/article/${a.id}" target="_blank">${a.title_zh || a.title}</a>
+        <a class="ai-title" href="/news/article/${a.id}" target="_blank">${a.title_zh || a.title}</a>
         ${a.title_zh ? `<span class="ai-orig">${a.title}</span>` : ''}
         <div class="ai-meta">
           <span>${a.source || '未知来源'}</span>
@@ -70,7 +70,7 @@ async function editArticle(a) {
   if (category === null) return;
   const score = prompt('重要性评分 1-5：', a.score ?? '');
   if (score === null) return;
-  await api(`/api/admin/articles/${a.id}`, {
+  await api(`/news/api/admin/articles/${a.id}`, {
     method: 'PUT',
     body: JSON.stringify({ title_zh: titleZh, category: category, score: parseInt(score) || null })
   });
@@ -79,7 +79,7 @@ async function editArticle(a) {
 
 async function delArticle(id) {
   if (!confirm('确定删除该文章？不可恢复。')) return;
-  await api(`/api/admin/articles/${id}`, { method: 'DELETE' });
+  await api(`/news/api/admin/articles/${id}`, { method: 'DELETE' });
   load(page);
 }
 

@@ -44,7 +44,7 @@ function fmtTime(iso) {
 }
 
 async function load() {
-  const res = await api('/api/admin/sources');
+  const res = await api('/news/api/admin/sources');
   const box = document.getElementById('sourceList');
   box.innerHTML = (res.items || []).map(s => `
     <div class="card source-item fade-up">
@@ -67,7 +67,7 @@ async function load() {
 }
 
 function findSource(id) {
-  return fetch('/api/admin/sources').then(r => r.json()).then(d => (d.items || []).find(x => x.id === id));
+  return fetch('/news/api/admin/sources').then(r => r.json()).then(d => (d.items || []).find(x => x.id === id));
 }
 
 function openForm(id) {
@@ -104,9 +104,9 @@ document.getElementById('sourceForm').addEventListener('submit', async (e) => {
   if (editingId) {
     const s = await findSource(editingId);
     body.enabled = s.enabled;
-    await api(`/api/admin/sources/${editingId}`, { method: 'PUT', body: JSON.stringify(body) });
+    await api(`/news/api/admin/sources/${editingId}`, { method: 'PUT', body: JSON.stringify(body) });
   } else {
-    await api('/api/admin/sources', { method: 'POST', body: JSON.stringify(body) });
+    await api('/news/api/admin/sources', { method: 'POST', body: JSON.stringify(body) });
   }
   closeModal();
   load();
@@ -114,7 +114,7 @@ document.getElementById('sourceForm').addEventListener('submit', async (e) => {
 
 async function toggle(id) {
   const s = await findSource(id);
-  await api(`/api/admin/sources/${id}`, {
+  await api(`/news/api/admin/sources/${id}`, {
     method: 'PUT',
     body: JSON.stringify({ name: s.name, url: s.url, type: s.type, enabled: !s.enabled })
   });
@@ -123,7 +123,7 @@ async function toggle(id) {
 
 async function removeSource(id, name) {
   if (!confirm(`确定删除「${name}」？`)) return;
-  await api(`/api/admin/sources/${id}`, { method: 'DELETE' });
+  await api(`/news/api/admin/sources/${id}`, { method: 'DELETE' });
   load();
 }
 

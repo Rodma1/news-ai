@@ -916,3 +916,16 @@ input:focus, select:focus, textarea:focus {
   .source-item { flex-direction: column; align-items: stretch; }
   .source-item .ops { justify-content: flex-end; }
 }
+
+/* ---------- article card stretched link (fix nested <a>) ---------- */
+.article-card-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  text-decoration: none;
+  color: inherit;
+}
+.article-card .tag-link {
+  position: relative;
+  z-index: 2;
+}

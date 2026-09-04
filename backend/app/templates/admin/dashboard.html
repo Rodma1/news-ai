@@ -41,7 +41,7 @@ async function refresh() {
   const btn = document.getElementById('refreshBtn');
   btn.disabled = true;
   try {
-    const s = await api('/api/admin/stats');
+    const s = await api('/news/api/admin/stats');
     const ai = s.ai_status || {};
     const src = s.sources || {};
     document.getElementById('statGrid').innerHTML =
@@ -57,7 +57,7 @@ async function refresh() {
 }
 
 const actionNames = { crawl: 'btnCrawl', process: 'btnProcess', digest: 'btnDigest' };
-const actionPaths = { crawl: '/api/admin/crawl', process: '/api/admin/process', digest: '/api/admin/digest' };
+const actionPaths = { crawl: '/news/api/admin/crawl', process: '/news/api/admin/process', digest: '/news/api/admin/digest' } crawl: '/api/admin/crawl', process: '/api/admin/process', digest: '/api/admin/digest' };
 const actionTexts = { crawl: '采集中…', process: '处理中…', digest: '生成中…' };
 
 async function run(name) {
@@ -82,7 +82,7 @@ async function run(name) {
 
 async function loadViews() {
   try {
-    const v = await api('/api/admin/views?days=7');
+    const v = await api('/news/api/admin/views?days=7');
     const days = v.days || [];
     const maxPv = Math.max(1, ...days.map(d => d.pv));
     document.getElementById('viewChart').innerHTML = days.map(d => `
@@ -98,7 +98,7 @@ async function loadViews() {
     const hot = v.hot || [];
     document.getElementById('hotArticles').innerHTML = hot.length
       ? hot.map((h, i) => `
-        <a class="hot-row" href="/article/${h.id}" target="_blank">
+        <a class="hot-row" href="/news/article/${h.id}" target="_blank">
           <span class="hot-rank-sm">${i + 1}</span>
           <span class="hot-title-sm">${h.title}</span>
           <span class="hot-pv">${h.pv} 次</span>

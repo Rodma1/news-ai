@@ -37,7 +37,7 @@
 {% block scripts %}
 <script>
 async function load() {
-  const s = await api('/api/admin/settings');
+  const s = await api('/news/api/admin/settings');
   document.getElementById('llm_base_url').value = s.llm_base_url;
   document.getElementById('llm_model').value = s.llm_model;
   document.getElementById('crawl_times').value = s.crawl_times;
@@ -58,7 +58,7 @@ async function save() {
   const msg = document.getElementById('saveMsg');
   btn.disabled = true;
   try {
-    await api('/api/admin/settings', {
+    await api('/news/api/admin/settings', {
       method: 'PUT',
       body: JSON.stringify({
         llm_base_url: document.getElementById('llm_base_url').value.trim(),
@@ -83,7 +83,7 @@ async function changePwd() {
   btn.disabled = true;
   msg.style.display = 'none';
   try {
-    await api('/api/admin/password', {
+    await api('/news/api/admin/password', {
       method: 'PUT',
       body: JSON.stringify({
         old_password: document.getElementById('oldPwd').value,

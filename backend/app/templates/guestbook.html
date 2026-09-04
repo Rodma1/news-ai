@@ -46,9 +46,9 @@
 
   {% if pages > 1 %}
   <div class="pager">
-    <a class="btn btn-sm {% if page <= 1 %}disabled{% endif %}" href="/guestbook?page={{ page - 1 }}">上一页</a>
+    <a class="btn btn-sm {% if page <= 1 %}disabled{% endif %}" href="/news/guestbook?page={{ page - 1 }}">上一页</a>
     <span class="pager-info">{{ page }} / {{ pages }}</span>
-    <a class="btn btn-sm {% if page >= pages %}disabled{% endif %}" href="/guestbook?page={{ page + 1 }}">下一页</a>
+    <a class="btn btn-sm {% if page >= pages %}disabled{% endif %}" href="/news/guestbook?page={{ page + 1 }}">下一页</a>
   </div>
   {% endif %}
 </div>
@@ -65,7 +65,7 @@ document.getElementById('gbForm').addEventListener('submit', async function (e) 
   btn.disabled = true;
   btn.textContent = '提交中…';
   try {
-    const res = await fetch('/api/guestbook', {
+    const res = await fetch('/news/api/guestbook', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="container detail">
-  <a href="/" class="back">← 返回资讯列表</a>
+  <a href="/news/" class="back">← 返回资讯列表</a>
   <article class="card detail-content fade-up">
     <div class="meta">
       {% if a.category %}<span class="tag-pill category">{{ a.category }}</span>{% endif %}
@@ -38,7 +38,7 @@
     {% endif %}
     {% if a.tags %}
     <div class="detail-tags">
-      {% for t in a.tags %}<a class="tag-pill tag-link" href="/tag/{{ t|urlencode }}"># {{ t }}</a>{% endfor %}
+      {% for t in a.tags %}<a class="tag-pill tag-link" href="/news/tag/{{ t|urlencode }}"># {{ t }}</a>{% endfor %}
     </div>
     {% endif %}
     {% if a.entities %}
@@ -61,7 +61,7 @@
     <h2 class="section-title">相关阅读</h2>
     <div class="related-list">
       {% for r in related %}
-      <a class="related-item" href="/article/{{ r.id }}">
+      <a class="related-item" href="/news/article/{{ r.id }}">
         <span class="related-title">{{ r.title }}</span>
         <span class="related-meta">{% if r.category %}{{ r.category }} · {% endif %}{{ r.time_label }}</span>
       </a>
